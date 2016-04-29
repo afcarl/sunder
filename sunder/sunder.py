@@ -80,7 +80,7 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
         return bounds
 
     x = process_axis(x, bb.x0, bb.width)
-    y = process_axis(y, bb.y0, bb.height)
+    y = process_axis(y, bb.y0, bb.height)[::-1]
     nx, ny = len(x), len(y)
 
     # Mark cells to select or exclude
@@ -92,7 +92,7 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
         _inds = []
         for i in inds:
             if isinstance(i, int):
-                i = (i // ny, i % ny)
+                i = ((i-1) % ny, (i-1) // ny)
             _inds.append(tuple(i))
         return list(zip(*_inds))
 
