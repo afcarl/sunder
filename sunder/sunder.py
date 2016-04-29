@@ -8,7 +8,8 @@ from matplotlib.transforms import Bbox
 import numpy as np
 
 
-def split_axes(ax=None, x=None, y=None, select=None, exclude=None):
+def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
+               flatten=False):
     '''
     Creates one more matplotlib Axes by "splitting" an existing Axes along the
     x and y dimensions.
@@ -36,6 +37,9 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None):
             Behaves identically to the x argument.
         select (int, iterable): Specifies which Axes to construct.
         exclude (list): specifies which Axes not to construct.
+        flatten (bool): If True, the ndarray of Axes to be returned is
+            flattened into a single list, and all non-initialized cells are
+            removed.
 
     Returns:
         If only a single Axes is created, it is returned directly.
@@ -104,5 +108,8 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None):
             if valid_inds[i, j]:
                 bbox = Bbox([[_x[0], _y[0]], [_x[1], _y[1]]])
                 axes[i, j] = fig.add_axes(bbox)
+
+    if flatten:
+        axes = [x for x in list(axes.ravel()) if x is not None]
 
     return axes
