@@ -8,18 +8,13 @@ from matplotlib.transforms import Bbox
 import numpy as np
 
 
-def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
+def split_axes(x=None, y=None, select=None, exclude=None, ax=None,
                flatten=False):
     '''
     Creates one more matplotlib Axes by "splitting" an existing Axes along the
     x and y dimensions.
 
     Args:
-        ax (Axes, Figure): A reference matplotlib Axes or Figure instance used
-            to define the boundaries of the new Axes. If a Figure is passed,
-            the entire plot boundaries will be used as the reference (subject 
-            to any limits imposed by the existing SubplotParams). If ax is
-            None, a new Figure and Axes will be created.
         x (int, list): Specifies how to split the Axes along the x dimension.
             If an int is passed, the width of the reference Axes is divided
             evenly into this many new Axes. For example, if the width of the
@@ -37,6 +32,11 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
             Behaves identically to the x argument.
         select (int, iterable): Specifies which Axes to construct.
         exclude (list): specifies which Axes not to construct.
+        ax (Axes, Figure): A reference matplotlib Axes or Figure instance used
+            to define the boundaries of the new Axes. If a Figure is passed,
+            the entire plot boundaries will be used as the reference (subject
+            to any limits imposed by the existing SubplotParams). If ax is
+            None, a new Figure and Axes will be created.
         flatten (bool): If True, the ndarray of Axes to be returned is
             flattened into a single list, and all non-initialized cells are
             removed.
@@ -79,8 +79,8 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
 
         return bounds
 
-    x = process_axis(x, bb.x0, bb.width)
-    y = process_axis(y, bb.y0, bb.height)[::-1]
+    x = process_axis(x, bb.x0, bb.width)[::-1]
+    y = process_axis(y, bb.y0, bb.height)
     nx, ny = len(x), len(y)
 
     # Mark cells to select or exclude
@@ -92,7 +92,7 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
         _inds = []
         for i in inds:
             if isinstance(i, int):
-                i = ((i-1) % ny, (i-1) // ny)
+                i = (i // ny, i % ny)
             _inds.append(tuple(i))
         return list(zip(*_inds))
 
@@ -106,10 +106,13 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None,
     for i, _x in enumerate(x):
         for j, _y in enumerate(y):
             if valid_inds[i, j]:
-                bbox = Bbox([[_x[0], _y[0]], [_x[1], _y[1]]])
+                bbox = Bbox([[_y[0], _x[0]], [_y[1], _x[1]]])
                 axes[i, j] = fig.add_axes(bbox)
 
     if flatten:
         axes = [x for x in list(axes.ravel()) if x is not None]
+
+    if len(axes) == 1 and (not select or isinstance(select, int)):
+        axes = axes[0]
 
     return axes
