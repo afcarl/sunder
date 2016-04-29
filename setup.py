@@ -1,15 +1,13 @@
 import sys
 from setuptools import setup, find_packages
 
-with open('sunder/version.py') as f:
-    exec(f.read())
+__version__ = '0.0.1'
 
 if len(set(('test', 'easy_install')).intersection(sys.argv)) > 0:
     import setuptools
 
 extra_setuptools_args = {}
 if 'setuptools' in sys.modules:
-    tests_require.append('nose')
     extra_setuptools_args = dict(
         test_suite='nose.collector',
         extras_require=dict(
@@ -23,7 +21,7 @@ setup(
     maintainer='Tal Yarkoni',
     maintainer_email='tyarkoni@gmail.com',
     url='http://github.com/tyarkoni/sunder',
-    packages=find_packages(exclude=['tests', 'test_*']),
+    packages=find_packages(),
     license='MIT',
     download_url='https://github.com/tyarkoni/sunder/archive/%s.tar.gz' % __version__,
     classifiers=[
