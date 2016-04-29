@@ -3,6 +3,7 @@ A small Axes-splitting utility to make subplot positioning more pleasant.
 '''
 
 import matplotlib
+import matplotlib.pyplot as plt
 from matplotlib.transforms import Bbox
 import numpy as np
 
@@ -33,6 +34,8 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None):
             respectively.
         y (int, list): Specifies how to split the Axes along the y dimension.
             Behaves identically to the x argument.
+        select (int, iterable): Specifies which Axes to construct.
+        exclude (list): specifies which Axes not to construct.
 
     Returns:
         If only a single Axes is created, it is returned directly.
@@ -74,11 +77,32 @@ def split_axes(ax=None, x=None, y=None, select=None, exclude=None):
 
     x = process_axis(x, bb.x0, bb.width)
     y = process_axis(y, bb.y0, bb.height)
+    nx, ny = len(x), len(y)
 
-    axes = np.ndarray((len(x), len(y)), dtype=np.object)
+    # Mark cells to select or exclude
+    valid_inds = np.ones((nx, ny))
+
+    def get_array_inds(inds):
+        if isinstance(inds, int):
+            inds = [inds]
+        _inds = []
+        for i in inds:
+            if isinstance(i, int):
+                i = (i // ny, i % ny)
+            _inds.append(tuple(i))
+        return list(zip(*_inds))
+
+    if select is not None:
+        valid_inds *= 0
+        valid_inds[get_array_inds(select)] = 1
+    if exclude is not None:
+        valid_inds[get_array_inds(exclude)] = 0
+
+    axes = np.ndarray((nx, ny), dtype=np.object)
     for i, _x in enumerate(x):
         for j, _y in enumerate(y):
-            bbox = Bbox([[_x[0], _y[0]], [_x[1], _y[1]]])
-            axes[i, j] = fig.add_axes(bbox)
+            if valid_inds[i, j]:
+                bbox = Bbox([[_x[0], _y[0]], [_x[1], _y[1]]])
+                axes[i, j] = fig.add_axes(bbox)
 
     return axes
